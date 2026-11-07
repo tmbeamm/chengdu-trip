@@ -2,7 +2,7 @@
    Open the site once while online; after that it loads from the phone even without internet.
    Pages and files are served from cache first, then refreshed in the background when online.
    Bump VERSION when the list of files below changes. */
-const VERSION = 'chengdu-trip-v1';
+const VERSION = 'chengdu-trip-v2';
 const PRECACHE = [
   './',
   'index.html',
