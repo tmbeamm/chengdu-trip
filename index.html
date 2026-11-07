@@ -150,7 +150,17 @@
     .eat-row .eat-area{font-family:var(--head);font-size:12.5px;font-weight:500;color:var(--gold-deep)}
     .eat-row b{font-family:var(--head);font-weight:500;font-size:16px;color:var(--ink)}.eat-row b span{color:var(--gold-deep);font-weight:400}
     .eat-row .event-actions{margin-top:6px}
-    .eat-note{margin-top:10px!important;font-size:13px!important;color:var(--muted)!important}
+    .eat-note{margin:14px 0 4px!important;font-size:13px!important;color:var(--muted)!important}
+    .act-food{margin-top:10px;color:var(--red);border-color:#F2C6C0;background:#fff}.act-food:hover{background:var(--red-soft)}
+    .sheet{border:0;padding:0;width:min(560px,100%);max-width:100%;max-height:86vh;border-radius:24px;background:var(--paper);color:var(--body);box-shadow:0 30px 80px #0008;overflow:hidden;flex-direction:column}
+    .sheet[open]{display:flex}
+    .sheet::backdrop{background:rgba(30,22,46,.6);backdrop-filter:blur(3px)}
+    .sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px 12px;border-bottom:1px solid var(--line);border-top:6px solid var(--red)}
+    .sheet-head h3{margin:2px 0 0;font-family:var(--head);font-size:21px;font-weight:600;color:var(--ink)}
+    .sheet-kicker{font-family:var(--head);font-size:12.5px;font-weight:500;letter-spacing:.06em;color:var(--red)}
+    .sheet-close{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:16px;color:var(--ink)}
+    .sheet-body{overflow-y:auto;padding:4px 20px 20px;-webkit-overflow-scrolling:touch}
+    .sheet-body .eat-row:first-child{border-top:0}
     .opt-tag{display:inline-block;vertical-align:middle;margin-left:8px;font-family:var(--head);font-size:12.5px;font-weight:500;letter-spacing:.04em;line-height:1.6;color:var(--pink-ink);background:var(--blush);border:1px dashed var(--sakura);padding:0 10px;border-radius:50px}
     .timeline-item.is-opt .event::before{background:radial-gradient(circle at 35% 35%,#FCE4EA,var(--sakura) 60%,#D9849A);box-shadow:0 0 0 3px var(--paper)}
     .legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-4px 0 20px;font-size:15px;color:var(--muted)}
@@ -279,13 +289,14 @@
       .phrase-grid{grid-template-columns:1fr;gap:12px}
       .pi-zh{font-size:22px}
       .nav-phrase{margin-top:0!important;border:1px solid transparent!important}
+      .sheet{margin:auto 0 0;width:100%;border-radius:24px 24px 0 0;max-height:85vh}
     }
     @media(max-width:390px){.hero h1{font-size:40px}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}}
     @media print{
       *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
       body{background:#fff}.layout{display:block}
-      .sidebar,.topbar,.action-btn,.event-actions,.toast,.petal{display:none!important}
+      .sidebar,.topbar,.action-btn,.event-actions,.act-food,.sheet,.toast,.petal{display:none!important}
       .main{padding:0}.hero{box-shadow:none;min-height:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
       .day-card{break-inside:avoid;box-shadow:none;margin-bottom:12px}.day-card[hidden]{display:block!important}
       .must-card{break-inside:avoid;box-shadow:none}
@@ -418,6 +429,10 @@
   </main>
 </div>
 <div class="toast" role="status" aria-live="polite" id="toast"></div>
+<dialog class="sheet" id="eat-dialog" aria-labelledby="eat-title">
+  <div class="sheet-head"><div><span class="sheet-kicker" id="eat-kicker"></span><h3 id="eat-title">🍜 ร้านแนะนำ</h3></div><button type="button" class="sheet-close" data-close-eats aria-label="ปิด">✕</button></div>
+  <div class="sheet-body" id="eat-body"></div>
+</dialog>
 <dialog class="show-dialog" id="show-dialog" aria-labelledby="show-zh">
   <div class="show-inner">
     <span class="show-hint">👀 ยื่นให้พนักงานดูได้เลย</span>
@@ -430,7 +445,7 @@
 <script>
 'use strict';
 const tripDays = [
-  {id:'08',day:'อาทิตย์',short:'อา.',title:'ถึงเฉิงตู · Taikoo Li · Daci Temple',subtitle:'TG618 ลง TFU 14:00 · เช็กอินแล้วเดินเล่นย่าน Taikoo Li · มื้อเย็นใกล้ที่พัก',emoji:'🏮',type:'city',keys:[{h:'✈️ เที่ยวบินขาไป',p:'<strong>TG618</strong> · อา. 8 พ.ย.<br>BKK <strong>10:05</strong> → TFU <strong>14:00</strong> (อาคาร T1)'}],events:[
+  {id:'08',day:'อาทิตย์',short:'อา.',eats:[{area:'ใกล้ที่พัก · Chunxi Road',name:'Long Chaoshou',zh:'龙抄手(春熙路总店)',note:'ร้านเกี๊ยวเก่าแก่ตั้งแต่ปี 1941 สั่ง 原汤抄手 = เกี๊ยวน้ำซุปใส ไม่เผ็ด · ~¥31/คน'},{area:'Taikoo Li',name:'Tao De',zh:'陶德砂锅',note:'อาหารหม้อดินสไตล์เสฉวน มีสาขาแถว Taikoo Li · คิวยาว ไปเร็วหน่อย'},{area:'ใกล้ที่พัก',name:'Meizhou Dongpo',zh:'眉州东坡',note:'ร้านอาหารเสฉวนเครือใหญ่ หลายสาขา มีเมนูไม่เผ็ดให้เลือก'}],title:'ถึงเฉิงตู · Taikoo Li · Daci Temple',subtitle:'TG618 ลง TFU 14:00 · เช็กอินแล้วเดินเล่นย่าน Taikoo Li · มื้อเย็นใกล้ที่พัก',emoji:'🏮',type:'city',keys:[{h:'✈️ เที่ยวบินขาไป',p:'<strong>TG618</strong> · อา. 8 พ.ย.<br>BKK <strong>10:05</strong> → TFU <strong>14:00</strong> (อาคาร T1)'}],events:[
     {time:'14:00',name:'ถึงสนามบินเทียนฝู่ (TFU) · อาคาร T1',cn:'成都天府国际机场',detail:'TG618 ออกจาก BKK 10:05 — ผ่าน ตม. และรับกระเป๋า เผื่อเวลาประมาณ 1 ชั่วโมง'},
     {time:'~15:15–16:30',name:'เดินทางเข้าเมือง → เช็กอินที่พัก Anlige',cn:'安丽阁·新中式公寓(成都太古里春熙路店)',detail:'สนามบิน TFU อยู่ไกลจากตัวเมือง ใช้เวลาประมาณ 1–1.5 ชั่วโมง · พัก 8–14 พ.ย. (6 คืน) ย่าน Taikoo Li / Chunxi Road',move:'DiDi ราว 60–80 นาที (สะดวกสุดสำหรับ 3 คน + กระเป๋า) หรือ Metro สาย 18 แล้วต่อสายอื่น ~1.5 ชม.',map:'安丽阁·新中式公寓(成都太古里春熙路店)',didi:'锦江区东大街下东大街段37号',copyLabel:'📋 Copy ที่อยู่ที่พัก'},
     {time:'~17:00',name:'Taikoo Li',price:'ฟรี',cn:'成都远洋太古里',detail:'เดินจากที่พักได้ — เดินเล่นย่าน Shopping และถ่ายรูปตึกสไตล์จีนโบราณผสมอาคารสมัยใหม่',move:'เดินไป Daci Temple ราว 3–8 นาที',map:'成都远洋太古里',didi:'成都远洋太古里'},
@@ -438,27 +453,27 @@ const tripDays = [
     {time:'ถ้ามีเวลา',name:'Tianhui Vanke Plaza',price:'ฟรี',optional:true,cn:'天荟万科广场',detail:'ร้านแฟชั่น คาเฟ่ และที่เดินเล่นฝั่งตะวันออก อยู่ติดย่าน Dongjiao Memory — <strong>ไปพร้อม Rosy DoeDian ได้ในรอบเดียว</strong>',move:'อยู่ติด Dongjiao Memory (Rosy DoeDian) เดินถึงกันได้ · กลับที่พักด้วย DiDi ราว 15–25 นาที',map:'天荟万科广场',didi:'天荟万科广场'},
     {time:'ถ้ามีเวลา',name:'Rosy DoeDian · ร้านฮอทด็อกของ Zhao Lusi',cn:'东郊记忆',price:'เข้าฟรี · ฮอทด็อก ~¥30',optional:true,detail:'รถขายฮอทด็อกชีสลายจุดแดง-ขาว มีมาสคอตน้องดัชชุนตัวใหญ่ อยู่ในย่านคาเฟ่ Dongjiao Memory (东郊记忆) เปิดประมาณ 10:00–22:00 คิวราว 30 นาที — <strong>ร้านเริ่มจากรถป๊อปอัป เช็กก่อนไปว่ายังเปิดอยู่</strong>',move:'จาก Taikoo Li นั่ง DiDi ราว 15–30 นาที (ปักหมุด 东郊记忆) หรือ Metro สาย 8 ลงสถานี Dongjiao Memory ทางออก B1 เดิน ~500 ม. · อยู่ติด Tianhui Vanke Plaza · กลับที่พักด้วย DiDi ราว 15–25 นาที',map:'东郊记忆',didi:'东郊记忆'},
     {time:'ค่ำ',name:'มื้อเย็นแถว Taikoo Li / Chunxi Road',detail:'เดินจากที่พักได้ ไม่ต้องไปไกล — พรุ่งนี้รถทัวร์มารับ 06:00 ควรนอนเร็ว'}
-  ],tips:['เครื่องลง 14:00 กว่าจะถึงที่พักราว 16:30 — Tianhui กับ Rosy DoeDian อยู่ติดกัน ถ้าไปก็แวะทีเดียวได้ทั้งสองที่ หรือข้ามไปเลย','พรุ่งนี้รถทัวร์มารับ 06:00 ควรกลับที่พักเร็ว'],food:'ร้านแนะนำ: Tao De (陶德砂锅) มีสาขาแถว Taikoo Li · Taolin Restaurant (饕林餐厅) · Meizhou Dongpo (眉州东坡) — เช็กสาขาที่ใกล้ที่สุดก่อนไป'},
-  {id:'09',day:'จันทร์',short:'จ.',title:'ภูเขาสี่ดรุณี (Siguniang) · Shuangqiaogou',subtitle:'Tour 2 วัน 1 คืน — ธรรมชาติและภูเขาหิมะ',emoji:'🏔️',type:'mountain',events:[
+  ],tips:['เครื่องลง 14:00 กว่าจะถึงที่พักราว 16:30 — Tianhui กับ Rosy DoeDian อยู่ติดกัน ถ้าไปก็แวะทีเดียวได้ทั้งสองที่ หรือข้ามไปเลย','พรุ่งนี้รถทัวร์มารับ 06:00 ควรกลับที่พักเร็ว'],food:'ใกล้ที่พักมีร้านเก่าแก่หลายร้าน เดินไปได้'},
+  {id:'09',day:'จันทร์',short:'จ.',eats:[{area:'แถวเขา Siguniang (เมือง 日隆镇)',name:'เนื้อจามรีย่าง',zh:'烤牦牛肉串',note:'ขายตามแผงริมทาง ไม้ละไม่กี่หยวน',dish:true},{area:'แถวเขา Siguniang',name:'หม้อซุปเนื้อจามรีกับเห็ดป่า',zh:'野菌牦牛汤锅',note:'ซุปร้อน ๆ ไม่เผ็ด เหมาะกับอากาศหนาว',dish:true}],title:'ภูเขาสี่ดรุณี (Siguniang) · Shuangqiaogou',subtitle:'Tour 2 วัน 1 คืน — ธรรมชาติและภูเขาหิมะ',emoji:'🏔️',type:'mountain',events:[
     {time:'06:00',name:'รถทัวร์มารับที่โรงแรม',detail:'ยืนยันจุดนัดรับกับบริษัททัวร์ก่อนวันเดินทาง',move:'นั่งรถทัวร์ตลอดวัน'},
     {time:'สาย–บ่าย',name:'Siguniang Mountain · Shuangqiaogou',price:'~¥150 รวมรถชมวิว · มักรวมในทัวร์',cn:'四姑娘山 · 双桥沟',detail:'เที่ยวหุบเขา ชมวิวภูเขาหิมะ ทะเลสาบ และจุดถ่ายรูป',move:'นั่งรถชมวิวในอุทยาน (ตามเงื่อนไขตั๋ว/แพ็กเกจ)',map:'四姑娘山双桥沟',didi:'四姑娘山双桥沟',city:''},
     {time:'เย็น',name:'พักค้างคืนที่ Li County',cn:'理县',detail:'พักตามโปรแกรมทัวร์ บางที่พักมีบ่อน้ำร้อน',move:'รถทัวร์',map:'理县',didi:'理县',city:''}
-  ],tips:['บนภูเขาหนาวกว่าในเมืองมาก เตรียมเสื้อกันลมและเสื้อกันหนาว','ถามทัวร์ให้ชัดว่ารวมค่ารถในอุทยานและค่าอาหารหรือยัง'],food:'อาหารตามร้านหรือโรงแรมที่ทัวร์จัด เลือกเมนูเนื้อสัตว์ ไข่ หรือเส้นแทนผักได้'},
-  {id:'10',day:'อังคาร',short:'อ.',title:'Bipenggou → Dujiangyan → เฉิงตู',subtitle:'เที่ยว Bipenggou (ปี้เผิงโกว) แล้วแวะถ่ายรูปแพนด้าที่ Dujiangyan และสะพาน Nanqiao',emoji:'🍁',type:'mountain',events:[
+  ],tips:['บนภูเขาหนาวกว่าในเมืองมาก เตรียมเสื้อกันลมและเสื้อกันหนาว','ถามทัวร์ให้ชัดว่ารวมค่ารถในอุทยานและค่าอาหารหรือยัง'],food:'อาหารตามที่ทัวร์จัด · ลองเมนูเนื้อจามรี (牦牛) ของขึ้นชื่อแถบภูเขา'},
+  {id:'10',day:'อังคาร',short:'อ.',eats:[{area:'แถว Dujiangyan / Qingcheng',name:'ไก่ตุ๋นแปะก๊วย',zh:'白果炖鸡',note:'เมนูขึ้นชื่อของแถบนี้ ซุปไก่ใส ไม่เผ็ด — ถ้าทัวร์แวะกินข้าวแถวนี้ลองถามดู',dish:true},{area:'กลับถึงเมือง · ใกล้ที่พัก',name:'Zhang Kaoya',zh:'张烤鸭(青石桥店)',note:'เป็ดย่างสูตรเฉิงตู (冒烤鸭 ลวกในน้ำซุป มักใส่พริก สั่งเผ็ดน้อย) · ~¥65/คน'}],title:'Bipenggou → Dujiangyan → เฉิงตู',subtitle:'เที่ยว Bipenggou (ปี้เผิงโกว) แล้วแวะถ่ายรูปแพนด้าที่ Dujiangyan และสะพาน Nanqiao',emoji:'🍁',type:'mountain',events:[
     {time:'07:30',name:'อาหารเช้าและออกเดินทาง',detail:'ออกเดินทางตามโปรแกรมทัวร์',move:'รถทัวร์'},
     {time:'เช้า–บ่าย',name:'Bipenggou',cn:'毕棚沟',detail:'ทะเลสาบ ภูเขา ป่า และวิวธรรมชาติ',move:'นั่งรถชมวิวในอุทยานตามโปรแกรม',map:'毕棚沟',didi:'毕棚沟',city:''},
     {time:'ขากลับ',name:'Dujiangyan · Panda Selfie',price:'ฟรี',cn:'都江堰 · 仰天窝广场',detail:'แวะถ่ายรูปกับรูปปั้นแพนด้าที่ลาน Yangtianwo (ถ้าทัวร์จอดแวะ)',move:'รถทัวร์',map:'都江堰仰天窝广场',didi:'都江堰仰天窝广场'},
     {time:'ถ้ามีเวลา',name:'Nanqiao Bridge',price:'ฟรี',optional:true,cn:'南桥',detail:'เดินชมสะพานและบรรยากาศยามค่ำ — ขึ้นกับเวลาของทัวร์',move:'เดินในพื้นที่ / รถทัวร์',map:'都江堰南桥',didi:'都江堰南桥'},
     {time:'ค่ำ',name:'เดินทางกลับเฉิงตู',detail:'พักผ่อนหลังทริปภูเขา ไม่ควรนัดกิจกรรมเพิ่ม'}
-  ],tips:['จุดแวะ Dujiangyan และ Nanqiao ไม่ได้รับประกัน ต้องยืนยันกับทัวร์','วันนี้นั่งรถนาน ช่วงค่ำควรพักผ่อน'],food:'อาหารตามโปรแกรมทัวร์ หรือหามื้อง่าย ๆ เมื่อกลับถึงเมือง'},
-  {id:'11',day:'พุธ',short:'พ.',title:'Panda Base · วัดเหวินซู · ซอยกว้างแคบ · Wangping Street',subtitle:'วันเดียวครบ: แพนด้า วัด สวนจิบชา ตรอกเก่า และริมแม่น้ำยามค่ำ',emoji:'🐼',type:'city',events:[
+  ],tips:['จุดแวะ Dujiangyan และ Nanqiao ไม่ได้รับประกัน ต้องยืนยันกับทัวร์','วันนี้นั่งรถนาน ช่วงค่ำควรพักผ่อน'],food:'มื้อกลางวันตามทัวร์ · กลับถึงเมืองแล้วหามื้อเย็นใกล้ที่พัก'},
+  {id:'11',day:'พุธ',short:'พ.',eats:[{area:'ใน People’s Park',name:'Zhong Shuijiao',zh:'钟水饺(人民公园店)',note:'เกี๊ยวหมูร้านเก่าแก่ ปกติราดซอสพริกหวาน (红油) ไม่เอาเผ็ดสั่ง 清汤水饺'},{area:'ใกล้ซอยกว้างแคบ',name:'Kuixinglou Street',zh:'奎星楼街',note:'ถนนอาหารที่คนท้องถิ่นไป เดินจากซอยกว้างแคบ ~5 นาที'},{area:'ในซอยกว้างแคบ',name:'Tingxiang Laogongguan',zh:'听香·老公馆',note:'ร้านอาหารเสฉวนบรรยากาศบ้านเก่า วันหยุดคิวยาว'},{area:'มื้อเย็น · Wangping Street',name:'Wang Popo Laoma Tihua',zh:'王婆婆老妈蹄花(望平街店)',note:'ซุปขาหมูกับถั่วขาว (老妈蹄花) ไม่เผ็ด · ~¥30/คน'},{area:'มื้อเย็น · Wangping Street',name:'Xunwei Garden',zh:'浔味花园餐厅(望平街店)',note:'อาหารเสฉวนแบบนั่งชิล มีที่นั่งกลางแจ้ง · แพงกว่า (เซ็ต ~¥158+)'}],title:'Panda Base · วัดเหวินซู · ซอยกว้างแคบ · Wangping Street',subtitle:'วันเดียวครบ: แพนด้า วัด สวนจิบชา ตรอกเก่า และริมแม่น้ำยามค่ำ',emoji:'🐼',type:'city',events:[
     {time:'08:00–10:30',name:'Chengdu Panda Base',price:'¥55 · ต้องจองออนไลน์',cn:'成都大熊猫繁育研究基地',detail:'ไปให้เช้าที่สุด แพนด้าตื่นตัวช่วงเช้า และคนยังไม่เยอะ',move:'จาก Anlige แนะนำ DiDi หรือ Metro สาย 3 แล้วต่อรถเข้า Panda Base',map:'成都大熊猫繁育研究基地',didi:'成都大熊猫繁育研究基地'},
     {time:'ถ้ามีเวลา',name:'วัดเจาเจว๋ย · Zhaojue Temple',cn:'昭觉寺',price:'ฟรี',optional:true,detail:'วัดพุทธเก่าแก่ของเฉิงตู อยู่ติดสวนสัตว์เฉิงตู ทางผ่านระหว่าง Panda Base กับวัดเหวินซู เปิดประมาณ 08:00–16:20 — <strong>ถ้าแวะ เวลาวัดเหวินซูจะเลื่อนไป ~45–60 นาที</strong>',move:'จาก Panda Base นั่ง DiDi ราว 15–25 นาที',map:'昭觉寺',didi:'昭觉寺'},
     {time:'11:30–13:30',name:'วัดเหวินซู · Wenshu Monastery',price:'ฟรี',cn:'文殊院',detail:'ไหว้พระ ชมวัด และเดินเล่นย่าน Wenshufang',move:'จาก Panda Base นั่ง DiDi ประมาณ 25–45 นาที (ถ้าแวะวัดเจาเจว๋ย: จากวัดนั่ง DiDi ~15–25 นาที)',map:'文殊院',didi:'文殊院'},
     {time:'14:00–15:30',name:'People’s Park + Heming Teahouse',price:'ฟรี (ค่าชาจ่ายแยก)',cn:'人民公园 · 鹤鸣茶社',detail:'เดินสวน จิบชา และดูวิถีชีวิตคนท้องถิ่น',move:'จากวัดเหวินซู นั่ง Metro หรือ DiDi ประมาณ 15–30 นาที',map:'鹤鸣茶社',didi:'人民公园'},
     {time:'15:45–17:00',name:'ซอยกว้างแคบ · Kuanzhai Alley',price:'ฟรี',cn:'宽窄巷子',detail:'ตรอกเก่า 3 สาย (宽巷子 · 窄巷子 · 井巷子) บ้านสไตล์จีนโบราณ ร้านขนม ของฝาก คาเฟ่ และมุมถ่ายรูป — ช่วงเย็นเริ่มเปิดโคมไฟ',move:'จาก People’s Park เดินราว 15 นาที หรือ DiDi 5–10 นาที (Metro สาย 4 ลงสถานี 宽窄巷子 ก็ได้)',map:'宽窄巷子',didi:'宽窄巷子'},
     {time:'17:30–20:00',name:'Wangping Street · ริมแม่น้ำยามค่ำ',price:'ฟรี',cn:'望平街',detail:'เดินเล่นริมแม่น้ำ Jinjiang ถ่ายรูปแสงไฟ และกินมื้อเย็น',move:'จากซอยกว้างแคบ นั่ง DiDi ราว 20–30 นาที · กลับที่พักด้วย DiDi ราว 10–15 นาที',map:'望平街',didi:'望平街'}
-  ],tips:['People’s Park → ซอยกว้างแคบ เดินถึงกันได้ ไม่ต้องเรียกรถ','จองตั๋ว Panda Base ออนไลน์ก่อนเดินทาง'],food:'จิบชาที่ Heming Teahouse (鹤鸣茶社) · ของกินเล่นที่ซอยกว้างแคบ · มื้อเย็นริมน้ำแถว Wangping Street เลือกเป็ด หมู ไก่ เกี๊ยว หรือเส้น'},
+  ],tips:['People’s Park → ซอยกว้างแคบ เดินถึงกันได้ ไม่ต้องเรียกรถ','จองตั๋ว Panda Base ออนไลน์ก่อนเดินทาง'],food:'จิบชาที่ People’s Park · ของกินเล่นแถวซอยกว้างแคบ · มื้อเย็นริมน้ำ Wangping'},
   {id:'12',day:'พฤหัสบดี',short:'พฤ.',eats:[{area:'ถึงแล้วหิว · ใกล้ Jiefangbei',name:'Wu Chaoshou',zh:'吴抄手',note:'ร้านเกี๊ยวเก่าแก่ สั่ง 清汤抄手 = เกี๊ยวน้ำใส ไม่เผ็ด · ~¥20/คน'},{area:'ใกล้ Jiefangbei',name:'Huashi Wanza Mian',zh:'花市豌杂面',note:'บะหมี่ฉงชิ่งราดถั่วกับหมูสับ บอก 不要辣 ถ้าไม่เอาเผ็ด · ~¥15/คน'},{area:'ใน Bayi Road Food Street',name:'Shancheng Xiao Tangyuan',zh:'山城小汤圆',note:'บัวลอยไส้งาน้ำหวาน ร้านดังคิวยาว ไม่เผ็ด'},{area:'ใน Bayi Road Food Street',name:'Pangzima Yanshuiya',zh:'胖子妈盐水鸭',note:'เป็ดต้มเกลือ ซื้อกินเล่นระหว่างเดิน'},{area:'มื้อเย็นใกล้ Hongyadong',name:'Shancheng Laotangkou 1636',zh:'山城老堂口1636',note:'ร้านอาหารฉงชิ่งแบบนั่งโต๊ะ อยู่ถนน Bayi ใกล้ Hongyadong — เมนูส่วนใหญ่เผ็ด สั่ง 微辣 (เผ็ดน้อย)'}],title:'Chongqing Day Trip · ฉงชิ่ง',subtitle:'G8615 11:53 → Shapingba 13:11 · G8638 กลับ 21:37 → Chengdu East 22:47',emoji:'🚄',type:'city',keys:[{h:'🚄 รถไฟฉงชิ่ง · ตู้ 03',p:'ไป <strong>G8615</strong> 11:53 成都东 → 13:11 沙坪坝 · ที่นั่ง 02A–C<br>กลับ <strong>G8638</strong> 21:37 沙坪坝 → 22:47 成都东 · ที่นั่ง 03A–C<br>ถึงสถานีก่อนรถออก ~30–45 นาที · พกพาสปอร์ตที่ใช้จอง'}],events:[
     {time:'~10:45',name:'ออกจากที่พัก → สถานี Chengdu East',cn:'成都东站',detail:'เผื่อเวลาตรวจกระเป๋าและสแกนพาสปอร์ต ควรถึงสถานีก่อนรถออกอย่างน้อย 30 นาที',move:'Metro สาย 2 จาก Chunxi Road ไปสถานี Chengdu East Railway Station (成都东客站) ราว 25 นาที หรือ DiDi',map:'成都东站',didi:'成都东站',city:'成都'},
     {time:'11:53',name:'รถไฟ G8615 → ฉงชิ่ง',price:'¥156/คน',detail:'Chengdu East (成都东) → Shapingba 13:11 · ตู้ 03 ที่นั่ง 02A–C'},
@@ -469,19 +484,19 @@ const tripDays = [
     {time:'19:30–20:45',name:'กลับสถานี Shapingba',cn:'沙坪坝',detail:'ตั้งเป้าถึงสถานีไม่เกิน 20:45 เผื่อเวลาตรวจความปลอดภัยและสแกนพาสปอร์ต',move:'Metro สาย 1 จาก Xiaoshizi ทิศ Bishan (璧山)',map:'沙坪坝站',didi:'沙坪坝站'},
     {time:'21:37',name:'รถไฟ G8638 กลับเฉิงตู',price:'¥139/คน',detail:'Shapingba → Chengdu East (成都东) 22:47 · ตู้ 03 ที่นั่ง 03A–C',move:'ถึงแล้วกลับที่พัก: Metro สาย 2 (ถ้ายังมีรถ) หรือ DiDi ~20–30 นาที',map:'安丽阁·新中式公寓(成都太古里春熙路店)',didi:'锦江区东大街下东大街段37号',copyLabel:'📋 Copy ที่อยู่ที่พัก',city:'成都'}
   ],tips:['พกพาสปอร์ตเล่มที่ใช้จองตั๋วไว้ ใช้แทนตั๋วตอนผ่านเกต','ตัด Liziba (รถไฟทะลุตึก) ออก เพราะเวลาน้อย','เวลากลับถึงสถานีสำคัญที่สุด ช่วงค่ำไม่ต้องแวะจุดเสริม'],food:'มื้อเช้ากินใกล้ที่พักก่อนออก 10:45 · ในฉงชิ่งไม่จำเป็นต้องกินหม้อไฟ'},
-  {id:'13',day:'ศุกร์',short:'ศ.',keys:[{h:'🌃 Highlight',p:'Chengdu SKP — <strong>Tower of Vitality (<span lang="zh">生机之塔</span>)</strong><br>ให้ SKP เป็นที่สุดท้ายเพื่อรอดูไฟ'}],title:'GOGO EGO → Luxelakes → Chengdu SKP',subtitle:'Shopping ตอนเช้า · คาเฟ่ริมทะเลสาบตอนบ่าย · ดูไฟ SKP ตอนค่ำ',emoji:'🛍️',type:'shopping',events:[
+  {id:'13',day:'ศุกร์',short:'ศ.',eats:[{area:'ใกล้ GOGO EGO · Chunxi Road',name:'Lai Tangyuan',zh:'赖汤圆(总府路店)',note:'บัวลอยร้านเก่าแก่ ของหวาน ไม่เผ็ด'},{area:'มื้อกลางวัน · Luxelakes',name:'Tianfu Food Island',zh:'天府美食岛',note:'โซนร้านอาหารใกล้ CPI ริมทะเลสาบ เลือกร้านตามชอบ'},{area:'มื้อเย็น · Chengdu SKP',name:'SKP-S Food Hall (B1)',zh:'成都SKP',note:'ฟู้ดฮอลล์ชั้น B1 ตึก SKP-S มีร้านอาหารท้องถิ่น 20+ ร้าน และ Market Place'},{area:'มื้อเย็น · Chengdu SKP',name:'Huaiyang Fu',zh:'淮扬府·游园京梦(成都SKP店)',note:'อาหารเจียงซู รสอ่อน ไม่เผ็ด'}],keys:[{h:'🌃 Highlight',p:'Chengdu SKP — <strong>Tower of Vitality (<span lang="zh">生机之塔</span>)</strong><br>ให้ SKP เป็นที่สุดท้ายเพื่อรอดูไฟ'}],title:'GOGO EGO → Luxelakes → Chengdu SKP',subtitle:'Shopping ตอนเช้า · คาเฟ่ริมทะเลสาบตอนบ่าย · ดูไฟ SKP ตอนค่ำ',emoji:'🛍️',type:'shopping',events:[
     {time:'10:00–12:00',name:'GOGO EGO · KAKA Lane',price:'ฟรี',cn:'春熙路附近',detail:'Shopping เสื้อผ้าสตรีท ของดีไซน์ และแฟชั่น — ถ้าค้น GOGO EGO ไม่เจอ ลองชื่อเดิม EGO壹购',move:'อยู่ย่าน Chunxi Road ใกล้ที่พัก (แยก 东大街 × 暑袜南街) เดินไปได้ หรือ DiDi ระยะสั้น',map:'GOGO EGO',didi:'GOGO EGO'},
     {time:'12:00–13:30',name:'เดินทางลงใต้ไป Luxelakes',detail:'เผื่อเวลาเดินทางจากตัวเมือง',move:'แนะนำ DiDi ราว 45–75 นาที หรือ Metro (ต่อสาย 1)'},
     {time:'13:30–16:30',name:'Luxelakes CPI',price:'ฟรี',cn:'麓湖CPI',detail:'คาเฟ่ มื้อกลางวัน และเดินชมสถาปัตยกรรมริมทะเลสาบ',move:'ถ้านั่ง Metro: ลงสถานี Hongshi Park (红石公园) แล้วเดินต่อ',map:'麓湖CPI',didi:'麓湖CPI'},
     {time:'16:30–18:00',name:'กลับขึ้นเหนือไป Chengdu SKP',detail:'เผื่อเวลารถติด และหามื้อเย็น',move:'แนะนำ DiDi ราว 25–45 นาที หรือ Metro สาย 1 ไปแถว Jincheng Square'},
     {time:'18:00–21:00',name:'Chengdu SKP · Tower of Vitality',price:'ฟรี',cn:'成都SKP · 生机之塔',detail:'เดินห้างหรูใต้ดินและถ่ายรูปไฟ/น้ำพุตอนค่ำ — <strong>เช็กรอบเปิดไฟที่หน้างาน</strong>',move:'DiDi หรือ Metro กลับ Anlige',map:'成都SKP',didi:'成都SKP'}
-  ],tips:['ลำดับวันนี้: GOGO EGO → Luxelakes → SKP','ให้ SKP เป็นที่สุดท้าย จะได้ดูไฟตอนค่ำแบบเต็มที่'],food:'มื้อกลางวันที่ Luxelakes CPI · มื้อเย็นใน/ใกล้ Chengdu SKP เช่น อาหารจีนทั่วไป ติ่มซำ หรือเมนูย่าง (ไม่ต้องเป็นหมาล่า)'},
-  {id:'14',day:'เสาร์',short:'ส.',title:'เดินทางกลับ',subtitle:'เช็กเอาต์ → สนามบินเทียนฝู่ T1 → TG619 15:05 → ถึง BKK 17:20',emoji:'✈️',type:'city',keys:[{h:'✈️ เที่ยวบินขากลับ',p:'<strong>TG619</strong> · ส. 14 พ.ย.<br>TFU <strong>15:05</strong> (อาคาร T1) → BKK <strong>17:20</strong><br>ควรถึงสนามบินประมาณ <strong>12:00</strong>'}],events:[
+  ],tips:['ลำดับวันนี้: GOGO EGO → Luxelakes → SKP','ให้ SKP เป็นที่สุดท้าย จะได้ดูไฟตอนค่ำแบบเต็มที่'],food:'มื้อกลางวันที่ Luxelakes · มื้อเย็นใน Chengdu SKP'},
+  {id:'14',day:'เสาร์',short:'ส.',eats:[{area:'มื้อเช้าใกล้ที่พัก',name:'Long Chaoshou',zh:'龙抄手(春熙路总店)',note:'เกี๊ยวน้ำซุปใส (原汤抄手) อิ่มท้องก่อนเดินทาง'},{area:'ใกล้ที่พัก',name:'Pansunshi',zh:'盘飧市',note:'ร้านเก่าแก่ ขายเป็ด/หมูพะโล้ (卤味) ซื้อติดมือก่อนไปสนามบิน'}],title:'เดินทางกลับ',subtitle:'เช็กเอาต์ → สนามบินเทียนฝู่ T1 → TG619 15:05 → ถึง BKK 17:20',emoji:'✈️',type:'city',keys:[{h:'✈️ เที่ยวบินขากลับ',p:'<strong>TG619</strong> · ส. 14 พ.ย.<br>TFU <strong>15:05</strong> (อาคาร T1) → BKK <strong>17:20</strong><br>ควรถึงสนามบินประมาณ <strong>12:00</strong>'}],events:[
     {time:'เช้า',name:'มื้อเช้า + เช็กเอาต์ Anlige',detail:'เช็กเวลา Check-out กับที่พัก เก็บกระเป๋าให้เรียบร้อยก่อน 10:30'},
     {time:'~10:30',name:'ออกจากที่พัก → สนามบินเทียนฝู่ (TFU)',cn:'成都天府国际机场',detail:'สนามบินอยู่ไกลจากเมือง เผื่อเวลาเดินทาง 1–1.5 ชั่วโมง',move:'DiDi ราว 60–80 นาที หรือ Metro สาย 18 (ต่อจากสายอื่น) ~1.5 ชม.',map:'成都天府国际机场T1航站楼',didi:'天府国际机场T1航站楼'},
     {time:'~12:00',name:'ถึง TFU อาคาร T1 · เช็กอิน TG619',detail:'โหลดกระเป๋าและผ่าน ตม. ขาออก — ถึงก่อนเวลาบินประมาณ 3 ชั่วโมง'},
     {time:'15:05',name:'TG619 บินกลับกรุงเทพ',detail:'ถึงสุวรรณภูมิ 17:20 (เวลาไทย) ✈️'}
-  ],tips:['ออกจากที่พักไม่เกิน ~10:30 เพราะสนามบิน TFU อยู่ไกลจากเมือง','เช็กอินออนไลน์ในแอป Thai Airways ได้ 24 ชม. ก่อนบิน'],food:'หามื้อเช้าหรือ Brunch ใกล้ที่พักก่อนออก 10:30'}
+  ],tips:['ออกจากที่พักไม่เกิน ~10:30 เพราะสนามบิน TFU อยู่ไกลจากเมือง','เช็กอินออนไลน์ในแอป Thai Airways ได้ 24 ชม. ก่อนบิน'],food:'มื้อเช้า/Brunch ใกล้ที่พักก่อนออก 10:30'}
 ];
 const nav = document.getElementById('day-nav');
 const cards = document.getElementById('day-cards');
@@ -489,7 +504,7 @@ const escapeHTML = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&l
 function mapLink(keyword, id, cityOverride) {const city = cityOverride!==undefined?cityOverride:(id==='12'?'重庆':'成都');return 'https://uri.amap.com/search?keyword='+encodeURIComponent(keyword)+(city?'&city='+encodeURIComponent(city):'')+'&callnative=1&src=chengdu-itinerary';}
 function renderDay(day){
   const timeline = day.events.map(e=>`<div class="timeline-item${e.optional?' is-opt':''}"><div class="time">${escapeHTML(e.time)}</div><div class="event"><div class="event-title">${escapeHTML(e.name)}${e.cn?`<span class="event-cn" lang="zh">${escapeHTML(e.cn)}</span>`:''}${e.optional?'<span class="opt-tag">Optional</span>':''}</div><p>${e.detail}</p>${(e.price||e.move)?`<div class="event-meta">${e.price?`<span class="price-tag">🎫 ${escapeHTML(e.price)}</span>`:''}${e.move?`<span class="route">${escapeHTML(e.move)}</span>`:''}</div>`:''}${e.map?`<div class="event-actions"><a class="act act-map" target="_blank" rel="noopener noreferrer" href="${mapLink(e.map,day.id,e.city)}" aria-label="เปิด Amap สำหรับ ${escapeHTML(e.name)}">📍 Amap</a><button type="button" class="act act-copy" data-place data-copy="${escapeHTML(e.didi||e.map)}" aria-label="คัดลอกชื่อจีนของ ${escapeHTML(e.name)}">${e.copyLabel||'📋 Copy ชื่อจีน'}</button></div>`:''}</div></div>`).join('');
-  return `<article class="day-card" data-type="${day.type}" data-day="${day.id}" id="day-${day.id}"><div class="day-head"><div><div class="day-num">DAY ${tripDays.indexOf(day)+1} · ${day.id} NOV · ${day.day}</div><h3>${escapeHTML(day.title)}</h3><p>${escapeHTML(day.subtitle)}</p></div><div class="day-emoji" aria-hidden="true">${day.emoji}</div></div><div class="day-body"><div class="timeline">${timeline}</div><aside class="side-notes">${(day.keys||[]).map(k=>`<div class="note-box key"><h4>${k.h}</h4><p>${k.p}</p></div>`).join('')}<div class="note-box tips"><h4>💡 Tips วันนี้</h4><ul>${day.tips.map(t=>`<li>${escapeHTML(t)}</li>`).join('')}</ul></div><div class="note-box food"><h4>🥟 ${day.eats?'ร้านแนะนำตามจุดที่ไป':'ไอเดียอาหาร (เลือกได้)'}</h4><p>${escapeHTML(day.food)}</p>${(day.eats||[]).map(r=>`<div class="eat-row"><span class="eat-area">${escapeHTML(r.area)}</span><b>${escapeHTML(r.name)} · <span lang="zh">${escapeHTML(r.zh)}</span></b><span>${escapeHTML(r.note)}</span><div class="event-actions"><a class="act act-map" target="_blank" rel="noopener noreferrer" href="${mapLink(r.zh,day.id)}" aria-label="เปิด Amap สำหรับ ${escapeHTML(r.name)}">📍 Amap</a><button type="button" class="act act-copy" data-place data-copy="${escapeHTML(r.zh)}" aria-label="คัดลอกชื่อจีนของ ${escapeHTML(r.name)}">📋 Copy ชื่อจีน</button></div></div>`).join('')}${day.eats?'<p class="eat-note">ข้อมูลร้านมาจากรีวิวและบทความเก่า เช็กเวลาเปิดก่อนไป</p>':''}</div></aside></div></article>`;
+  return `<article class="day-card" data-type="${day.type}" data-day="${day.id}" id="day-${day.id}"><div class="day-head"><div><div class="day-num">DAY ${tripDays.indexOf(day)+1} · ${day.id} NOV · ${day.day}</div><h3>${escapeHTML(day.title)}</h3><p>${escapeHTML(day.subtitle)}</p></div><div class="day-emoji" aria-hidden="true">${day.emoji}</div></div><div class="day-body"><div class="timeline">${timeline}</div><aside class="side-notes">${(day.keys||[]).map(k=>`<div class="note-box key"><h4>${k.h}</h4><p>${k.p}</p></div>`).join('')}<div class="note-box tips"><h4>💡 Tips วันนี้</h4><ul>${day.tips.map(t=>`<li>${escapeHTML(t)}</li>`).join('')}</ul></div><div class="note-box food"><h4>🥟 อาหารวันนี้</h4><p>${escapeHTML(day.food)}</p>${day.eats&&day.eats.length?`<button type="button" class="act act-food" data-eats="${day.id}">🍜 ดูร้านแนะนำ (${day.eats.length})</button>`:''}</div></aside></div></article>`;
 }
 nav.innerHTML=`<button class="nav-btn active" data-filter="all" type="button" aria-pressed="true"><span class="nav-emoji">🐼</span><span>ทุกวัน<small>7 วัน 6 คืน</small></span></button>`+tripDays.map(day=>`<button type="button" class="nav-btn" data-filter="${day.id}" aria-pressed="false"><span class="nav-date">${day.id}</span><span>${day.short} พ.ย.<small>${escapeHTML(day.title)}</small></span></button>`).join('')+`<a class="nav-btn nav-phrase" href="#must"><span class="nav-emoji">⭐</span><span>ห้ามพลาด<small>Must-do & ร้าน Must-try</small></span></a><a class="nav-btn nav-phrase" href="#phrases"><span class="nav-emoji">🗣️</span><span>คำจีน<small>ประโยคใช้บ่อย · กดขยายให้พนักงานดู</small></span></a>`;
 cards.innerHTML=tripDays.map(renderDay).join('');
@@ -595,6 +610,19 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-close]'))closePhrase();
 });
 showDialog.addEventListener('click',e=>{if(e.target===showDialog)closePhrase()});
+
+/* ---------- restaurant popup ---------- */
+const eatDialog=document.getElementById('eat-dialog');
+function openEats(id){
+  const day=tripDays.find(d=>d.id===id);if(!day||!day.eats)return;
+  document.getElementById('eat-kicker').textContent=`DAY ${tripDays.indexOf(day)+1} · ${day.id} NOV · ${day.day}`;
+  document.getElementById('eat-body').innerHTML=day.eats.map(r=>`<div class="eat-row"><span class="eat-area">${escapeHTML(r.area)}</span><b>${escapeHTML(r.name)} · <span lang="zh">${escapeHTML(r.zh)}</span></b><span>${escapeHTML(r.note)}</span><div class="event-actions">${r.dish?'':`<a class="act act-map" target="_blank" rel="noopener noreferrer" href="${mapLink(r.zh,day.id)}" aria-label="เปิด Amap สำหรับ ${escapeHTML(r.name)}">📍 Amap</a>`}<button type="button" class="act act-copy" ${r.dish?'':'data-place '}data-copy="${escapeHTML(r.zh)}">📋 ${r.dish?'Copy ชื่อเมนู':'Copy ชื่อจีน'}</button></div></div>`).join('')+'<p class="eat-note">ข้อมูลร้านมาจากรีวิวและบทความ อาจไม่อัปเดต เช็กเวลาเปิดก่อนไป</p>';
+  document.getElementById('eat-body').scrollTop=0;
+  if(typeof eatDialog.showModal==='function'){if(!eatDialog.open)eatDialog.showModal()}else eatDialog.setAttribute('open','');
+}
+function closeEats(){if(typeof eatDialog.close==='function')eatDialog.close();else eatDialog.removeAttribute('open')}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-eats]');if(b){openEats(b.dataset.eats);return}if(e.target.closest('[data-close-eats]'))closeEats()});
+eatDialog.addEventListener('click',e=>{if(e.target===eatDialog)closeEats()});
 
 /* ---------- offline mode ---------- */
 if('serviceWorker' in navigator&&location.protocol!=='file:'){
